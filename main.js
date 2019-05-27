@@ -1,5 +1,6 @@
 var ekilst=[];
 var count=0;
+//
 $.getJSON('data.json',function(data){
     alert("成功");
     ekilst = data;
