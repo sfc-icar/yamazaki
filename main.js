@@ -1,10 +1,13 @@
 var ekilst=[];
 var count=0;
+var train_list=[];
+var heading=0;
+//
+function nobori(){headinh=1;}
 $.getJSON('data.json',function(data){
     alert("成功");
     ekilst = data;
 })
-    
 function test_delta(){
     $.getJSON('delta.json',function(data){
         alert("成功");
@@ -18,8 +21,9 @@ function getloc(){
     navigator.geolocation.watchPosition(getloc_success, getloc_fail, {"enableHighAccuracy": true, "timeout": 20000, "maximumAge": 2000});
 }
 function getloc_success(position){
+    get_train();
     if(checkloc(position)!=0){
-        alert("測定範囲外です");
+        //alert("測定範囲外です");
     }
 
 }
@@ -39,6 +43,17 @@ function checkloc(position){
 
     geo_text += "取得時刻:" + date.toLocaleString() + "\n";
     geo_text += "取得回数:" + count + "\n\n";
+    if (position.coords.heading != null){
+        if (position.coords.heading > 0 && position.coords.heading < 90){
+            geo_text += "上り\n"
+            heading = true;
+        }else{
+            if(position.coords.heading > 180 && position.coords.heading < 270){
+                geo_text += "下り\n"
+                heading = false;
+            }
+        }
+    }
     for (let i=0;i<ekilst.length;i++){
         if (ekilst[i].endlat<=position.coords.latitude && ekilst[i].stlat>=position.coords.latitude && ekilst[i].endlong<=position.coords.longitude && ekilst[i].stlong>=position.coords.longitude){
             eki(geo_text,i,position);
@@ -58,6 +73,21 @@ function checkloc(position){
 }
 function ekikan(status,eki1_id,eki2_id){
     var res = status + "列車位置:"+ ekilst[eki1_id].name + "-" + ekilst[eki2_id].name + "\n";
+    for (i = 0; i < train_list.trains.length; i++){
+        if (heading == false && train_list.trains[i].up == false){
+            if (eki1_id + 114 == train_list.trains[i].section_id){
+                res +=  "列車番号:"+ train_list.trains[i].operation_number +"番列車\n"
+                break;
+            }
+        }else{
+            if(heading == true && train_list.trains[i].up == true){
+                if (eki1_id + 87 == train_list.trains[i].section_id){
+                    res +=  "列車番号:"+ train_list.trains[i].operation_number +"番列車\n"
+                    break;
+                }
+            }
+        }
+    }
     disp (res);
 }
 function eki(status,eki_id,position){
@@ -65,9 +95,19 @@ function eki(status,eki_id,position){
     var stationlen = Math.sqrt((ekilst[eki_id].stlat - ekilst[eki_id].endlat)**2 + (ekilst[eki_id].stlong - ekilst[eki_id].endlong)**2);
     var car_number = Math.ceil(Math.sqrt((ekilst[eki_id].stlat - position.coords.latitude)**2 + (ekilst[eki_id].stlong - position.coords.longitude)**2)/stationlen*10);
     res +=  "乗車位置:"+ car_number +"両目\n";
+    for (i = 0; i < train_list.trains.length; i++){
+        if (ekilist[eki_id].st_id == train_list.trains[i].station_id && heading == train_list.trains[i].up){
+            res +=  "列車番号:"+ train_list.trains[i].operation_number +"番列車\n"
+            break;
+        }
+    }
     disp (res); 
 }
-
+function get_train(){
+    $.getJSON('https://web.sfc.keio.ac.jp/~t16901ky/abc/dento.php',function(data){
+        train_list = data;
+    })
+}
 function disp(res){
     document.getElementById("position_view").innerHTML = res;
 }
