@@ -1,9 +1,13 @@
 var ekilst=[];
 var count=0;
+<<<<<<< HEAD
 var train_list=[];
 var heading=0;
 //
 function nobori(){headinh=1;}
+=======
+//
+>>>>>>> 526a3d0406a8c8309e87dd6521a54ff359c4f3dd
 $.getJSON('data.json',function(data){
     alert("成功");
     ekilst = data;
